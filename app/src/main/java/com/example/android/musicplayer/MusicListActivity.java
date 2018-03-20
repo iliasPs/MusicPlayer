@@ -2,10 +2,12 @@ package com.example.android.musicplayer;
 
 import android.Manifest;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.media.AudioManager;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -106,21 +108,30 @@ public class MusicListActivity extends AppCompatActivity {
     public void getMusic() {
         ContentResolver contentResolver = getContentResolver();
         Uri songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        Cursor songCursor = contentResolver.query(songUri, null, null, null, null);
+        Cursor songCursor = contentResolver.query(songUri, null, null, null, null, null);
         if (songCursor != null && songCursor.moveToFirst()) {
             int songTitle = songCursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
             int songArtist = songCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
             int songAlbum = songCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM);
             int songData = songCursor.getColumnIndex(MediaStore.Audio.Media.DATA);
             int songID = songCursor.getColumnIndex(MediaStore.Audio.Media._ID);
+            int songGenre = songCursor.getColumnIndex(MediaStore.Audio.Genres.NAME);
+            MediaMetadataRetriever mr = new MediaMetadataRetriever();
 
+            Uri trackUri = ContentUris.withAppendedId(
+                    android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,songID);
+
+            mr.setDataSource(this, trackUri);
 
             do {
+                String currentID = songCursor.getString(songID);
                 String currentTitle = songCursor.getString(songTitle);
                 String currentArtist = songCursor.getString(songArtist);
                 String currentAlbum = songCursor.getString(songAlbum);
                 String currentData = songCursor.getString(songData);
-                songs.add(new Song(currentTitle, currentArtist, currentAlbum, currentData));
+                String currentGenre = songCursor.getString(songGenre);
+
+                songs.add(new Song(currentID, currentTitle, currentArtist, currentAlbum,currentGenre,currentData));
 
             } while (songCursor.moveToNext());
         }

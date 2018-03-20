@@ -26,15 +26,15 @@ public class Song {
 
 
 
-    }
+         }
 
-    public Song(String songID, String songTitle, String songArtist, String songAlbum, String songGenre) {
-        mSongID = songID;
+    public Song(String songID,String songTitle, String songArtist, String songAlbum, String songGenre, String songData) {
+       mSongID = songID;
         mSongTitle = songTitle;
         mSongArtist = songArtist;
         mSongAlbum = songAlbum;
         mSongGenre = songGenre;
-
+        mSongData = songData;
     }
 
 
