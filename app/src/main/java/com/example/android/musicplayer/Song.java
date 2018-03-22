@@ -15,8 +15,6 @@ public class Song {
     private String mSongGenre;
 
 
-
-
     public Song(/*int albumImg,*/ String songTitle, String songArtist, String songAlbum, String songData) {
 //        mAlbumImg = albumImg;
         mSongTitle = songTitle;
@@ -25,11 +23,10 @@ public class Song {
         mSongData = songData;
 
 
+    }
 
-         }
-
-    public Song(String songID,String songTitle, String songArtist, String songAlbum, String songGenre, String songData) {
-       mSongID = songID;
+    public Song(String songTitle, String songArtist, String songAlbum, String songGenre, String songData) {
+        //mSongID = songID;
         mSongTitle = songTitle;
         mSongArtist = songArtist;
         mSongAlbum = songAlbum;
@@ -42,7 +39,7 @@ public class Song {
 //        return mAlbumImg;
 //    }
 
-    public String getSongID(){
+    public String getSongID() {
         return mSongID;
     }
 
@@ -61,7 +58,8 @@ public class Song {
     public String getSongData() {
         return mSongData;
     }
-    public String getSongGenre(){
+
+    public String getSongGenre() {
         return mSongGenre;
     }
 

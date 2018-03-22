@@ -2,12 +2,11 @@ package com.example.android.musicplayer;
 
 import android.Manifest;
 import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.media.AudioManager;
-import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -24,11 +23,10 @@ import java.util.ArrayList;
 
 public class MusicListActivity extends AppCompatActivity {
 
-    private static final int MY_PERMISSION_REQUEST = 1;
-    ArrayList<Song> songs = new ArrayList<Song>();
-    private MediaPlayer mMediaPlayer;
-    private AudioManager mAudioManager;
-
+        private static final int MY_PERMISSION_REQUEST = 1;
+        ArrayList<Song> songs = new ArrayList<>();
+        private MediaPlayer mMediaPlayer;
+        private AudioManager mAudioManager;
 
     AudioManager.OnAudioFocusChangeListener mOnAudioFocusChangeListener =
             new AudioManager.OnAudioFocusChangeListener() {
@@ -40,7 +38,6 @@ public class MusicListActivity extends AppCompatActivity {
                         mMediaPlayer.pause();
                         //Start the audio track from the start since our files are to small in duration
                         mMediaPlayer.seekTo(0);
-
                     } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
                         //this means we gained focus so we start(); the media player
                         mMediaPlayer.start();
@@ -97,6 +94,12 @@ public class MusicListActivity extends AppCompatActivity {
 
                     mMediaPlayer = MediaPlayer.create(MusicListActivity.this, Uri.parse(song.getSongData()));
                     mMediaPlayer.start();
+
+                    Intent goToPlayer = new Intent (Intent.ACTION_VIEW);
+                    goToPlayer.setClass(MusicListActivity.this, PlayerActivity.class);
+                    goToPlayer.putExtra("songToPlay", Uri.parse(song.getSongData()));
+                    startActivity(goToPlayer);
+
                     // we are releasing the memory usage at the start and in the end of the media played.
                     //also check the mCompletionListener
                     mMediaPlayer.setOnCompletionListener(mCompletionListener);
@@ -106,33 +109,42 @@ public class MusicListActivity extends AppCompatActivity {
     }
 
     public void getMusic() {
+        String[] genres = {
+                MediaStore.Audio.Genres.NAME,
+                MediaStore.Audio.Genres._ID
+        };
         ContentResolver contentResolver = getContentResolver();
-        Uri songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        Cursor songCursor = contentResolver.query(songUri, null, null, null, null, null);
-        if (songCursor != null && songCursor.moveToFirst()) {
+        Uri songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;//setting the uri for the song cursor
+        Cursor genreCursor;
+        String currentGenre;
+        Cursor songCursor = contentResolver.query(songUri, null, null, null, null);
+        if (songCursor.moveToFirst()) {
             int songTitle = songCursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
             int songArtist = songCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST);
             int songAlbum = songCursor.getColumnIndex(MediaStore.Audio.Media.ALBUM);
             int songData = songCursor.getColumnIndex(MediaStore.Audio.Media.DATA);
             int songID = songCursor.getColumnIndex(MediaStore.Audio.Media._ID);
-            int songGenre = songCursor.getColumnIndex(MediaStore.Audio.Genres.NAME);
-            MediaMetadataRetriever mr = new MediaMetadataRetriever();
 
-            Uri trackUri = ContentUris.withAppendedId(
-                    android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,songID);
-
-            mr.setDataSource(this, trackUri);
 
             do {
-                String currentID = songCursor.getString(songID);
                 String currentTitle = songCursor.getString(songTitle);
                 String currentArtist = songCursor.getString(songArtist);
                 String currentAlbum = songCursor.getString(songAlbum);
                 String currentData = songCursor.getString(songData);
-                String currentGenre = songCursor.getString(songGenre);
 
-                songs.add(new Song(currentID, currentTitle, currentArtist, currentAlbum,currentGenre,currentData));
+                int musicID = Integer.parseInt(songCursor.getString((songID)));// setting the track id to get the metadata later on
+                Uri uri = MediaStore.Audio.Genres.getContentUriForAudioId("external", musicID); // setting the uri for the genre cursor
+                genreCursor = getBaseContext().getContentResolver().query(uri, genres, null, null, null);
+                int genreColumnIndex = genreCursor.getColumnIndexOrThrow(MediaStore.Audio.Genres.NAME);//getting the name of the genre through the index of the track
+                if (genreCursor.moveToFirst() && genreCursor.getString(genreColumnIndex) != null) {//i need this && because i must check if the data is there in the first place (ie the genre tag might be missing)
+                    do {                                                                           // maybe i should do a try command? - i ll check that later
+                        currentGenre = genreCursor.getString(genreColumnIndex);
 
+                    } while (genreCursor.moveToNext());
+                } else {
+                    currentGenre = "N/A";
+                }
+                songs.add(new Song(currentTitle, currentArtist, currentAlbum, currentGenre, currentData));//feeding the custom class
             } while (songCursor.moveToNext());
         }
     }
@@ -155,6 +167,7 @@ public class MusicListActivity extends AppCompatActivity {
             }
         }
     }
+
     /**
      * Clean up the media player by releasing its resources.
      */
