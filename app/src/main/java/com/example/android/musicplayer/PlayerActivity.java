@@ -5,13 +5,16 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.Toast;
+import android.widget.TextView;
+
+import java.util.ArrayList;
 
 public class PlayerActivity extends AppCompatActivity {
 
@@ -20,8 +23,11 @@ public class PlayerActivity extends AppCompatActivity {
     ImageButton next;
     ImageButton previous;
     ImageButton repeat;
+    TextView songTitleTV;
+
     private MediaPlayer mMediaPlayer;
     private AudioManager mAudioManager;
+    ArrayList<Song> songs = new ArrayList<>();
 
     AudioManager.OnAudioFocusChangeListener mOnAudioFocusChangeListener =
             new AudioManager.OnAudioFocusChangeListener() {
@@ -54,10 +60,12 @@ public class PlayerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
+        songs = getIntent().getParcelableArrayListExtra("songs");
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         play = findViewById(R.id.play_pause);
         next = findViewById(R.id.next);
         previous = findViewById(R.id.prev);
+        songTitleTV = findViewById(R.id.textView);
 
         if (ContextCompat.checkSelfPermission(PlayerActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(PlayerActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
@@ -73,9 +81,16 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     public void player() {
-        Bundle extras = getIntent().getExtras();
-        final String songToplay = extras.getString("songToPlay");
-        if (songToplay !=null){
+//        Intent i = getIntent();
+//        final String songToplay = i.getStringExtra("song");
+//        Uri uri = Uri.parse(songToplay);
+//        Log.v("playeractivity", "song to play is " + songToplay);
+//        Log.v("playeractivity", "uri to play is " + uri);
+
+        final int position=getIntent().getIntExtra("songtoplay", 0);
+        final Song song = songs.get(position);
+        if (songs.get(position) !=null){
+
             int result = mAudioManager.requestAudioFocus(mOnAudioFocusChangeListener //we need a focusListener
                     , AudioManager.STREAM_MUSIC, //use the music stream
                     AudioManager.AUDIOFOCUS_GAIN_TRANSIENT); // and how long - in this case is temporary
@@ -84,13 +99,16 @@ public class PlayerActivity extends AppCompatActivity {
                 play.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                mMediaPlayer = MediaPlayer.create(view.getContext(), songToplay);
-                mMediaPlayer.start();
+                        //Uri fileUri = Uri.parse(songToplay);
+
+                        songTitleTV.setText(song.getSongTitle());
+                        mMediaPlayer = MediaPlayer.create(PlayerActivity.this, Uri.parse(song.getSongData()));
+                        mMediaPlayer.start();
                     }
                 });
                 // we are releasing the memory usage at the start and in the end of the media played.
                 //also check the mCompletionListener
-                mMediaPlayer.setOnCompletionListener(mCompletionListener);
+//                mMediaPlayer.setOnCompletionListener(mCompletionListener);
             }
 
         }}
@@ -122,7 +140,7 @@ public class PlayerActivity extends AppCompatActivity {
 //            case MY_PERMISSION_REQUEST: {
 //                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 //                    if (ContextCompat.checkSelfPermission(MusicListActivity.this,
-//                            Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+//                            Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMI SSION_GRANTED) {
 //                        Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
 //                        popList();
 //                    } else {
