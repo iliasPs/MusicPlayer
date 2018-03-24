@@ -60,7 +60,7 @@ public class PlayerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
-        songs = getIntent().getParcelableArrayListExtra("songs");
+        songs = getIntent().getParcelableExtra("songs");
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         play = findViewById(R.id.play_pause);
         next = findViewById(R.id.next);

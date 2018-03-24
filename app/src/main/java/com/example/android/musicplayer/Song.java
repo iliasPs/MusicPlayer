@@ -1,10 +1,13 @@
 package com.example.android.musicplayer;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by vega on 05-Mar-18.
  */
 
-public class Song {
+public class Song implements Parcelable {
 
     private int mAlbumImg;
     private String mSongID;
@@ -63,7 +66,43 @@ public class Song {
         return mSongGenre;
     }
 
+
+    protected Song(Parcel in) {
+        mAlbumImg = in.readInt();
+        mSongID = in.readString();
+        mSongTitle = in.readString();
+        mSongArtist = in.readString();
+        mSongAlbum = in.readString();
+        mSongData = in.readString();
+        mSongGenre = in.readString();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(mAlbumImg);
+        dest.writeString(mSongID);
+        dest.writeString(mSongTitle);
+        dest.writeString(mSongArtist);
+        dest.writeString(mSongAlbum);
+        dest.writeString(mSongData);
+        dest.writeString(mSongGenre);
+    }
+
+    @SuppressWarnings("unused")
+    public static final Parcelable.Creator<Song> CREATOR = new Parcelable.Creator<Song>() {
+        @Override
+        public Song createFromParcel(Parcel in) {
+            return new Song(in);
+        }
+
+        @Override
+        public Song[] newArray(int size) {
+            return new Song[size];
+        }
+    };
 }
-
-
-
