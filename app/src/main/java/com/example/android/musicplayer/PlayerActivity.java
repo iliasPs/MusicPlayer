@@ -29,6 +29,7 @@ public class PlayerActivity extends AppCompatActivity {
     private AudioManager mAudioManager;
     ArrayList<Song> songs = new ArrayList<>();
 
+
     AudioManager.OnAudioFocusChangeListener mOnAudioFocusChangeListener =
             new AudioManager.OnAudioFocusChangeListener() {
                 @Override
@@ -60,13 +61,15 @@ public class PlayerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
-        songs = getIntent().getParcelableExtra("songs");
+        songs = getIntent().getParcelableArrayListExtra("songs");
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         play = findViewById(R.id.play_pause);
         next = findViewById(R.id.next);
         previous = findViewById(R.id.prev);
         songTitleTV = findViewById(R.id.textView);
-
+        final int position=getIntent().getIntExtra("songtoplay", 0);
+        final Song song = songs.get(position);
+        songTitleTV.setText(song.getSongTitle());
         if (ContextCompat.checkSelfPermission(PlayerActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(PlayerActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
                 ActivityCompat.requestPermissions(PlayerActivity.this,
@@ -101,7 +104,7 @@ public class PlayerActivity extends AppCompatActivity {
                     public void onClick(View view) {
                         //Uri fileUri = Uri.parse(songToplay);
 
-                        songTitleTV.setText(song.getSongTitle());
+
                         mMediaPlayer = MediaPlayer.create(PlayerActivity.this, Uri.parse(song.getSongData()));
                         mMediaPlayer.start();
                     }

@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -24,10 +26,10 @@ import java.util.ArrayList;
 
 public class MusicListActivity extends AppCompatActivity {
 
-        private static final int MY_PERMISSION_REQUEST = 1;
-      ArrayList<Song> songs = new ArrayList<>();
-       private MediaPlayer mMediaPlayer;
-       private AudioManager mAudioManager;
+    private static final int MY_PERMISSION_REQUEST = 1;
+    ArrayList<Song> songs = new ArrayList<>();
+    private MediaPlayer mMediaPlayer;
+    private AudioManager mAudioManager;
 //
 //    AudioManager.OnAudioFocusChangeListener mOnAudioFocusChangeListener =
 //            new AudioManager.OnAudioFocusChangeListener() {
@@ -97,33 +99,43 @@ public class MusicListActivity extends AppCompatActivity {
 //                    mMediaPlayer = MediaPlayer.create(MusicListActivity.this, Uri.parse(song.getSongData()));
 //                    mMediaPlayer.start();
 
-                    //Intent goToPlayer = new Intent (Intent.ACTION_VIEW);//this is used to send media uri
-                Intent songsSend = new Intent();
-                songsSend.setClass(MusicListActivity.this, PlayerActivity.class);
+                //Intent goToPlayer = new Intent (Intent.ACTION_VIEW);//this is used to send media uri
+
+                Intent songsSend = new Intent(MusicListActivity.this, PlayerActivity.class);
+
                 songsSend.putExtra("songs", songs);
-                Intent songtoplay = new Intent(MusicListActivity.this,PlayerActivity.class);
-                songtoplay.putExtra("songtoplay", position);
+                songsSend.putExtra("songtoplay", position);
+                startActivity(songsSend);
 
 //                    goToPlayer.setClass(MusicListActivity.this, PlayerActivity.class);
 //                    String songtosend = Uri.parse(song.getSongData()).toString();
 //                    goToPlayer.putExtra("song", songtosend);
-                   startActivity(songtoplay);
+                startActivity(songsSend);
 
-                    // we are releasing the memory usage at the start and in the end of the media played.
-                    //also check the mCompletionListener
+                // we are releasing the memory usage at the start and in the end of the media played.
+                //also check the mCompletionListener
 //                    mMediaPlayer.setOnCompletionListener(mCompletionListener);
-                }});}
+            }
+        });
+    }
 
 
     public void getMusic() {
         String[] genres = {
                 MediaStore.Audio.Genres.NAME,
-                MediaStore.Audio.Genres._ID
+                MediaStore.Audio.Genres._ID,
+
+        };
+
+        String images[] = {
+                MediaStore.Audio.Albums.ALBUM_ART
         };
         ContentResolver contentResolver = getContentResolver();
         Uri songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;//setting the uri for the song cursor
         Cursor genreCursor;
+
         String currentGenre;
+        Bitmap currentImage = null;
         Cursor songCursor = contentResolver.query(songUri, null, null, null, null);
         if (songCursor.moveToFirst()) {
             int songTitle = songCursor.getColumnIndex(MediaStore.Audio.Media.TITLE);
@@ -143,25 +155,50 @@ public class MusicListActivity extends AppCompatActivity {
                 int musicID = Integer.parseInt(songCursor.getString((songID)));// setting the track id to get the metadata later on
                 Uri uri = MediaStore.Audio.Genres.getContentUriForAudioId("external", musicID); // setting the uri for the genre cursor
                 genreCursor = getBaseContext().getContentResolver().query(uri, genres, null, null, null);
+
+//                android.media.MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+//                mmr.setDataSource(songs.get(songData).getSongData());
+//                byte [] data = mmr.getEmbeddedPicture();
+//                Bitmap currentImage = BitmapFactory.decodeByteArray(data, 0 , data.length);
+
+
+                //imgCursor = getBaseContext().getContentResolver().query((uri), images,null, null, null);
                 int genreColumnIndex = genreCursor.getColumnIndexOrThrow(MediaStore.Audio.Genres.NAME);//getting the name of the genre through the index of the track
                 if (genreCursor.moveToFirst() && genreCursor.getString(genreColumnIndex) != null) {//i need this && because i must check if the data is there in the first place (ie the genre tag might be missing)
-                    do {                                                                           // maybe i should do a try command? - i ll check that later
+                    do
+                    {                                                                           // maybe i should do a try command? - i ll check that later
                         currentGenre = genreCursor.getString(genreColumnIndex);
+//                        Uri uri2 = MediaStore.Audio.Media.getContentUriForPath("external");
+//                        imageCursor = getBaseContext().getContentResolver().query(uri2, images, null, null, null);
+//                        int imgColumnIndex = imageCursor.getColumnIndexOrThrow(MediaStore.Audio.Albums.ALBUM_ART);
 
+                        Cursor imgCursor = getContentResolver().query(MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+                                new String[]{MediaStore.Audio.Albums._ID, MediaStore.Audio.Albums.ALBUM_ART},
+                                MediaStore.Audio.Albums._ID + "=?",
+                                new String[]{String.valueOf(MediaStore.Audio.Albums._ID)},
+                                null);
+                        do{
+                        if (imgCursor.moveToFirst()) {
+                            String imgPath = imgCursor.getString(imgCursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
+                            Log.v("Musiclistactivity", "img path is" + imgPath);
+                            currentImage = BitmapFactory.decodeFile(imgPath);
+                        } else {
+                            currentImage = BitmapFactory.decodeResource(getResources(), R.drawable.nocover);
+                        }}while (imgCursor.moveToNext()) ;
                     } while (genreCursor.moveToNext());
                 } else {
                     currentGenre = "N/A";
                 }
-                songs.add(new Song(currentTitle, currentArtist, currentAlbum, currentGenre, currentData));//feeding the custom class
+                songs.add(new Song(currentImage, currentTitle, currentArtist, currentAlbum, currentGenre, currentData));//feeding the custom class
 
             } while (songCursor.moveToNext());
 
 
-
         }
         int i;
-        for (i=0; i<songs.size(); i++){
-            Log.v("musiclistactivity", "the data on position are " + songs.get(i).getSongAlbum() + songs.get(i).getSongArtist() + songs.get(i).getSongTitle() + songs.get(i).getSongData()) ;}
+        for (i = 0; i < songs.size(); i++) {
+            Log.v("musiclistactivity", "the data on position are " + songs.get(i).getSongAlbum() + songs.get(i).getSongArtist() + songs.get(i).getSongTitle() + songs.get(i).getSongData());
+        }
     }
 
     @Override

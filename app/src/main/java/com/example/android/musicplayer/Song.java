@@ -1,5 +1,6 @@
 package com.example.android.musicplayer;
 
+import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -9,7 +10,7 @@ import android.os.Parcelable;
 
 public class Song implements Parcelable {
 
-    private int mAlbumImg;
+    private Bitmap mSongImage;
     private String mSongID;
     private String mSongTitle; //private member variable of the class
     private String mSongArtist; //private member variable of the class
@@ -18,32 +19,22 @@ public class Song implements Parcelable {
     private String mSongGenre;
 
 
-    public Song(/*int albumImg,*/ String songTitle, String songArtist, String songAlbum, String songData) {
-//        mAlbumImg = albumImg;
-        mSongTitle = songTitle;
-        mSongArtist = songArtist;
-        mSongAlbum = songAlbum;
-        mSongData = songData;
+    public Song(Bitmap songImage, String songTitle, String songArtist, String songAlbum, String songGenre, String songData) {
 
-
-    }
-
-    public Song(String songTitle, String songArtist, String songAlbum, String songGenre, String songData) {
-        //mSongID = songID;
         mSongTitle = songTitle;
         mSongArtist = songArtist;
         mSongAlbum = songAlbum;
         mSongGenre = songGenre;
         mSongData = songData;
+        mSongImage = songImage;
     }
 
 
-//    public int getAlbumImg() {
-//        return mAlbumImg;
-//    }
 
-    public String getSongID() {
-        return mSongID;
+    public Bitmap getmAlbumImg() {
+
+
+        return mSongImage;
     }
 
     public String getSongTitle() {
@@ -68,7 +59,7 @@ public class Song implements Parcelable {
 
 
     protected Song(Parcel in) {
-        mAlbumImg = in.readInt();
+        mSongImage = (Bitmap) in.readValue(Bitmap.class.getClassLoader());
         mSongID = in.readString();
         mSongTitle = in.readString();
         mSongArtist = in.readString();
@@ -84,7 +75,7 @@ public class Song implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(mAlbumImg);
+        dest.writeValue(mSongImage);
         dest.writeString(mSongID);
         dest.writeString(mSongTitle);
         dest.writeString(mSongArtist);
@@ -105,4 +96,5 @@ public class Song implements Parcelable {
             return new Song[size];
         }
     };
+
 }
