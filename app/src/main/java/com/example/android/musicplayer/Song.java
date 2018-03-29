@@ -10,6 +10,18 @@ import android.os.Parcelable;
 
 public class Song implements Parcelable {
 
+    @SuppressWarnings("unused")
+    public static final Parcelable.Creator<Song> CREATOR = new Parcelable.Creator<Song>() {
+        @Override
+        public Song createFromParcel(Parcel in) {
+            return new Song(in);
+        }
+
+        @Override
+        public Song[] newArray(int size) {
+            return new Song[size];
+        }
+    };
     private Bitmap mSongImage;
     private String mSongID;
     private String mSongTitle; //private member variable of the class
@@ -17,9 +29,9 @@ public class Song implements Parcelable {
     private String mSongAlbum; //private member variable of the class
     private String mSongData; //private member variable of the class
     private String mSongGenre;
+    private int mSongDuration;
 
-
-    public Song(Bitmap songImage, String songTitle, String songArtist, String songAlbum, String songGenre, String songData) {
+    public Song(Bitmap songImage, String songTitle, String songArtist, String songAlbum, String songGenre, String songData, int songDuration) {
 
         mSongTitle = songTitle;
         mSongArtist = songArtist;
@@ -27,8 +39,19 @@ public class Song implements Parcelable {
         mSongGenre = songGenre;
         mSongData = songData;
         mSongImage = songImage;
+        mSongDuration = songDuration;
     }
 
+    protected Song(Parcel in) {
+        mSongImage = (Bitmap) in.readValue(Bitmap.class.getClassLoader());
+        mSongID = in.readString();
+        mSongTitle = in.readString();
+        mSongArtist = in.readString();
+        mSongAlbum = in.readString();
+        mSongData = in.readString();
+        mSongGenre = in.readString();
+        mSongDuration = in.readInt();
+    }
 
 
     public Bitmap getmAlbumImg() {
@@ -57,17 +80,6 @@ public class Song implements Parcelable {
         return mSongGenre;
     }
 
-
-    protected Song(Parcel in) {
-        mSongImage = (Bitmap) in.readValue(Bitmap.class.getClassLoader());
-        mSongID = in.readString();
-        mSongTitle = in.readString();
-        mSongArtist = in.readString();
-        mSongAlbum = in.readString();
-        mSongData = in.readString();
-        mSongGenre = in.readString();
-    }
-
     @Override
     public int describeContents() {
         return 0;
@@ -82,19 +94,7 @@ public class Song implements Parcelable {
         dest.writeString(mSongAlbum);
         dest.writeString(mSongData);
         dest.writeString(mSongGenre);
+        dest.writeInt(mSongDuration);
     }
-
-    @SuppressWarnings("unused")
-    public static final Parcelable.Creator<Song> CREATOR = new Parcelable.Creator<Song>() {
-        @Override
-        public Song createFromParcel(Parcel in) {
-            return new Song(in);
-        }
-
-        @Override
-        public Song[] newArray(int size) {
-            return new Song[size];
-        }
-    };
 
 }

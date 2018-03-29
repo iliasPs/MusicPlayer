@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">MusicPlayer</string>
+    <string name="nomore">There are no more songs in your list!</string>
+    <string name="backLib">Library</string>
 </resources>
